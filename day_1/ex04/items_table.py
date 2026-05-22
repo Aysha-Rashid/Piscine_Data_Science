@@ -3,6 +3,7 @@ import psycopg2
 from dotenv import load_dotenv
 from psycopg2 import sql
 
+
 def create_script(table_name):
     create_script = sql.SQL('''CREATE TABLE {} (
                         product_id   INTEGER,
@@ -34,23 +35,25 @@ def store_in_database(filename, conn, cur):
     assert os.path.exists(filename), "The file doesnt exist"
     assert filename.endswith('.csv'), "File isnt csv file"
     table_name = 'items'
-    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format(sql.Identifier(table_name)))
+    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format
+                (sql.Identifier(table_name)))
     cur.execute(create_script(table_name))
 
     with open(filename, 'r') as f:
         next(f)  # skip header
         cur.copy_expert(
-            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format(sql.Identifier(table_name)), f
+            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format
+            (sql.Identifier(table_name)), f
         )
 
 
 def main():
+    conn = None
+    cur = None
     try:
-        conn = None
-        cur = None
         conn = connection()
         cur = conn.cursor()
-        store_in_database("../Data/item/item.csv", conn, cur)
+        store_in_database("../subject/item/item.csv", conn, cur)
     except Exception as e:
         print("Error:", e)
     finally:

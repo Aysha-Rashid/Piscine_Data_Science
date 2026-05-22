@@ -21,7 +21,7 @@ services:
     env_file:
       - ../.env
     volumes:
-      - pgadmin_data:/var/lib/pgadmin   # ✅ persists pgAdmin settings
+      - pgadmin_data:/var/lib/pgadmin
     depends_on:
       - postgres_db
     restart: always
@@ -30,19 +30,7 @@ services:
 
 volumes:
   postgres_data: 
-    name: postgres_data
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '../../docker_data/postgres_data/'
   pgadmin_data:
-    name: pgadmin_data
-    driver: local
-    driver_opts:
-      type: 'none'
-      o: 'bind'
-      device: '../../docker_data/pgadmin_data/'
 networks:
   database:
     driver: bridge

@@ -3,6 +3,7 @@ import psycopg2
 from dotenv import load_dotenv
 from psycopg2 import sql
 
+
 def create_script(table_name):
     create_script = sql.SQL('''CREATE TABLE {} (
                         event_time   TIMESTAMPTZ,
@@ -20,13 +21,15 @@ def store_in_database(filename, conn, cur):
     assert filename.endswith('.csv'), "File isnt csv file"
     pos_data = filename.find("data_")
     table_name = filename[pos_data:-4]
-    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format(sql.Identifier(table_name)))
+    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format
+                (sql.Identifier(table_name)))
     cur.execute(create_script(table_name))
 
     with open(filename, 'r') as f:
         next(f)  # skip header
         cur.copy_expert(
-            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format(sql.Identifier(table_name)), f
+            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format
+            (sql.Identifier(table_name)), f
         )
 
 
@@ -48,10 +51,10 @@ def connection():
 
 
 def main():
+    conn = None
+    cur = None
     try:
-        path, dirs, files = next(os.walk("../Data/customer/"))
-        conn = None
-        cur = None
+        path, dirs, files = next(os.walk("../subject/customer/"))
         conn = connection()
         cur = conn.cursor()
         for f in files:

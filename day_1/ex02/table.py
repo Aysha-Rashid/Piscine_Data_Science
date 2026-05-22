@@ -38,23 +38,25 @@ def store_in_database(filename, conn, cur):
     assert filename.endswith('.csv'), "File isnt csv file"
     pos_data = filename.find("data_")
     table_name = filename[pos_data:-4]
-    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format(sql.Identifier(table_name)))
+    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format
+                (sql.Identifier(table_name)))
     cur.execute(create_script(table_name))
 
     with open(filename, 'r') as f:
         next(f)  # skip header
         cur.copy_expert(
-            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format(sql.Identifier(table_name)), f
+            sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format
+            (sql.Identifier(table_name)), f
         )
 
 
 def main():
+    conn = None
+    cur = None
     try:
-        conn = None
-        cur = None
         conn = connection()
         cur = conn.cursor()
-        store_in_database("../Data/customer/data_2022_oct.csv", conn, cur)
+        store_in_database("../subject/customer/data_2022_oct.csv", conn, cur)
     except Exception as e:
         print("Error:", e)
     finally:
