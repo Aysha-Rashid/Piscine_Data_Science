@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from psycopg2 import sql
 
 
-def create_script(table_name):
+def item_create_script(table_name):
     create_script = sql.SQL('''CREATE TABLE {} (
                         product_id   INTEGER,
                         category_id   NUMERIC,

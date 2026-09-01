@@ -20,14 +20,20 @@ def create_script(table_name):
 def store_in_database(filename, conn, cur):
     assert os.path.exists(filename), "The file doesnt exist"
     assert filename.endswith('.csv'), "File isnt csv file"
-    pos_data = filename.find("data_")
-    table_name = filename[pos_data:-4]
-    cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format
+    basename = os.path.basename(filename)
+    if (basename == 'item.csv'):
+        table_name = 'item'
+        cur.execute(sql.SQL('DROP TABLE IF EXISTS item').format
                 (sql.Identifier(table_name)))
-    cur.execute(create_script(table_name))
+        cur.execute(item_create_script(table_name))
+    else:
+        pos_data = filename.find("data_")
+        table_name = filename[pos_data:-4]
+        cur.execute(sql.SQL('DROP TABLE IF EXISTS {}').format
+                    (sql.Identifier(table_name)))
+        cur.execute(create_script(table_name))
 
     with open(filename, 'r') as f:
-        next(f)  # skip header
         cur.copy_expert(
             sql.SQL("COPY {} FROM STDIN WITH CSV HEADER").format
             (sql.Identifier(table_name)), f
@@ -50,6 +56,7 @@ def connection():
     )
     return conn
 
+
 def create_customer_tables():
     create_script = sql.SQL('''CREATE TABLE customers AS(
                         SELECT * FROM data_2022_dec
@@ -64,18 +71,31 @@ def create_customer_tables():
                     )''')
     return create_script
 
+
+def item_create_script(table_name):
+    create_script = sql.SQL('''CREATE TABLE {} (
+                        product_id   INTEGER,
+                        category_id   NUMERIC,
+                        category_code   TEXT NULL,
+                        brand        varchar(254) NULL
+                    )''').format(sql.Identifier(table_name))
+    return create_script
+
+
 def main():
     conn = None
     cur = None
     try:
         assert len(sys.argv) != 3, "Less arguments"
         path, dirs, files = next(os.walk(sys.argv[1]))
+        basename = os.path.basename(files[0])
         conn = connection()
         cur = conn.cursor()
         for f in files:
             store_in_database(os.path.join(path, f), conn, cur)
-        customer_table = create_customer_tables()
-        cur.execute(customer_table)
+        if (basename != "item.csv"):
+            customer_table = create_customer_tables()
+            cur.execute(customer_table)
     except Exception as e:
         print("Error:", e)
     finally:
